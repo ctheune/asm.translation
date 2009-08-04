@@ -14,10 +14,5 @@ setup(name='asm.translation',
       zip_safe=False,
       install_requires=['setuptools',
                         'grok',
-                        'zc.resourcelibrary',
-                        'grokui.admin',
-                        'zc.sourcefactory',
-                        'megrok.pagelet',
-                        'zope.html',
-                        ],
-      )
+                        'zope.interface',
+                        'zope.schema'])
