@@ -6,7 +6,7 @@
   <grok:grok package="." />
 
   <subscriber
-    factory=".translation.select_retail_edition"
+    factory=".translation.RetailEditionSelector"
     provides="asm.cms.interfaces.IEditionSelector"
     />
 

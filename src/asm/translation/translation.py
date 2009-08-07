@@ -11,14 +11,31 @@ def select_initial_language():
     return set(['lang:en'])
 
 
-@zope.component.adapter(asm.cms.IRetailSkin)
-def select_retail_edition(request):
-    for lang in request.headers.get('Accept-Language', '').split(','):
-        lang = lang.split(';')[0]
-        lang = lang.split('-')[0]
-        lang = 'lang:%s' % lang
-        return set([lang])
-    return set(['lang:en'])
+class RetailEditionSelector(object):
+
+    zope.interface.implements(asm.cms.IEditionSelector)
+    zope.component.adapts(asm.cms.IPage, asm.cms.IRetailSkin)
+
+    def __init__(self, page, request):
+        self.preferred = []
+
+        # We prefer any language the user accepts
+        preferred_langs = set()
+        for lang in request.headers.get('Accept-Language', '').split(','):
+            lang = lang.split(';')[0]
+            lang = lang.split('-')[0]
+            lang = preferred_langs.add('lang:%s' % lang)
+        for edition in page.editions:
+            if preferred_langs.intersection(edition.parameters):
+                self.preferred.append(edition)
+
+        # Otherwise we also accept language neutral or english
+        self.acceptable = []
+        for edition in page.editions:
+            if 'lang:' in edition.parameters:
+                self.acceptable.append(edition)
+            if 'lang:en' in edition.parameters:
+                self.acceptable.append(edition)
 
 
 class ITranslation(zope.interface.Interface):
