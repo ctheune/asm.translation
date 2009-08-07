@@ -53,4 +53,4 @@ class Translate(asm.cms.Form):
             self.flash(u'Translation created.')
         else:
             self.flash(u'Translation already exists.')
-        self.redirect(self.url(translation))
+        self.redirect(self.url(translation, '@@edit'))

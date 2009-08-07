@@ -1,1 +1,1 @@
-<li><a href="translate">Translate</a></li>
+<li><a tal:attributes="href python:view.url(context, 'translate')">Translate</a></li>
