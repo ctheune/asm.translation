@@ -1,0 +1,10 @@
+<configure
+   xmlns="http://namespaces.zope.org/zope"
+   i18n_domain="asm.cms"
+   >
+
+  <include package="asm.cms" file="ftesting.zcml" />
+  <include package="." />
+
+</configure>
+
