@@ -40,8 +40,7 @@ class RetailEditionSelector(object):
 
 class ITranslation(zope.interface.Interface):
 
-    # XXX Turn this static list into a contextual source which will not offer
-    # languages that already exist.
+    # Issue #61: Turn static list of values into source.
     language = zope.schema.Choice(title=u'Language to translate to',
                                   values=['fi', 'en'])
 
