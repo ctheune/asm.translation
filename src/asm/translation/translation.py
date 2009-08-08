@@ -11,6 +11,21 @@ def select_initial_language():
     return set(['lang:en'])
 
 
+class CMSEditionSelector(object):
+
+    zope.interface.implements(asm.cms.IEditionSelector)
+    zope.component.adapts(asm.cms.IPage, asm.cms.ICMSSkin)
+
+    def __init__(self, page, request):
+        self.preferred = []
+        self.acceptable = []
+        for edition in page.editions:
+            if 'lang:en' in edition.parameters:
+                self.preferred.append(edition)
+            else:
+                self.acceptable.append(edition)
+
+
 class RetailEditionSelector(object):
 
     zope.interface.implements(asm.cms.IEditionSelector)

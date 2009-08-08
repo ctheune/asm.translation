@@ -10,6 +10,11 @@
     provides="asm.cms.interfaces.IEditionSelector"
     />
 
+  <subscriber
+    factory=".translation.CMSEditionSelector"
+    provides="asm.cms.interfaces.IEditionSelector"
+    />
+
   <utility
     component=".translation.select_initial_language"
     provides="asm.cms.IInitialEditionParameters"
