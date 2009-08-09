@@ -2,7 +2,6 @@
 The translation egg
 ===================
 
->>> import cStringIO
 >>> from zope.testbrowser.testing import Browser
 >>> b = Browser()
 >>> b.addHeader('Authorization', 'Basic mgr:mgrpw')
@@ -14,16 +13,12 @@ The translation egg
 >>> b.getControl('Name').value = 'testpage'
 >>> b.getControl(name='form.type').displayValue = ['htmlpage']
 >>> b.getControl('Add').click()
->>> b.open('http://localhost/++skin++cms/site/testpage/edition-lang:en/@@edit')
->>> print b.contents
-<html> ...
-lang:en
-...
+>>> b.getLink('no title').click()
 
 >>> 'lang:fi' not in b.contents
 True
 
->>> b.getControl('Title').value = 'good title''
+>>> b.getControl('Title').value = 'good title'
 >>> b.getControl('Content').value = 'better content'
 >>> b.getControl('Save').click()
 >>> print b.contents
