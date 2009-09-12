@@ -4,7 +4,7 @@
    >
 
   <include package="asm.cms" file="ftesting.zcml" />
-  <include package="." />
+  <include package="asm.translation" />
 
 </configure>
 

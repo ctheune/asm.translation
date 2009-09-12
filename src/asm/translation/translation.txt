@@ -1,6 +1,6 @@
-===================
-The translation egg
-===================
+==============================
+Providing content translations
+==============================
 
 >>> from zope.testbrowser.testing import Browser
 >>> b = Browser()
@@ -15,6 +15,8 @@ The translation egg
 >>> b.getControl('Add').click()
 >>> b.getLink('no title').click()
 
+>>> 'lang:en' in b.contents
+True
 >>> 'lang:fi' not in b.contents
 True
 
@@ -22,29 +24,17 @@ True
 >>> b.getControl('Content').value = 'better content'
 >>> b.getControl('Save').click()
 >>> print b.contents
-<html> ...
-Updated on
-...
-good title
-...
-better content
-...
-lang:en
+<html>
+...Updated on...lang:en...good title...better content...
 ...
 
->>> b.getControl('Translate').click()
+>>> b.getLink('Translate').click()
 >>> b.getControl(name='form.actions.translate').click()
 >>> print b.contents
-<html> ...
-Translation created
-...
-good title
-...
-better content
-...
+<html>
+...Translation created...good title...better content...
 
 >>> 'lang:fi' in b.contents
 True
-
 >>> 'lang:en' in b.contents
 True

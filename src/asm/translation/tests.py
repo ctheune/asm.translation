@@ -3,12 +3,12 @@
 
 import unittest
 from zope.app.testing.functional import FunctionalDocFileSuite
-import asm.cms.testing
+import asm.translation.testing
 
 
 def test_suite():
     suite = unittest.TestSuite()
     t = FunctionalDocFileSuite('translation.txt', package='asm.translation')
-    t.layer = asm.cms.testing.TestLayer
+    t.layer = asm.translation.testing.TestLayer
     suite.addTest(t)
     return suite
