@@ -32,20 +32,34 @@ class RetailEditionSelector(object):
     zope.component.adapts(asm.cms.IPage, asm.cms.IRetailSkin)
 
     def __init__(self, page, request):
-        self.preferred = []
+        # XXX This algorithm isn't optimal in all cases. E.g. if a user has a
+        # preferred language selected but it isn't available then we go
+        # directly to neutral/english instead of first checking for the
+        # browser setting.
 
-        # We prefer any language the user accepts
+        # XXX Need to make this more pluggable
+        request.response.setHeader('Vary', 'Cookie,Accept-Language')
+
+        self.preferred = []
+        self.acceptable = []
         preferred_langs = set()
-        for lang in request.headers.get('Accept-Language', '').split(','):
-            lang = lang.split(';')[0]
-            lang = lang.split('-')[0]
-            lang = preferred_langs.add('lang:%s' % lang)
+
+        # Prefer cookie if set
+        if 'asm.translation.lang' in request.cookies:
+            preferred_langs.add(request.cookies['asm.translation.lang'])
+        else:
+            # If no cookie is set we'll prefer the browser setting
+            for lang in request.headers.get('Accept-Language', '').split(','):
+                lang = lang.split(';')[0]
+                lang = lang.split('-')[0]
+                preferred_langs.add(lang)
+
+        preferred_langs = set('lang:%s' % lang for lang in preferred_langs)
         for edition in page.editions:
             if preferred_langs.intersection(edition.parameters):
                 self.preferred.append(edition)
 
         # Otherwise we also accept language neutral or english
-        self.acceptable = []
         for edition in page.editions:
             if 'lang:' in edition.parameters:
                 self.acceptable.append(edition)
