@@ -42,25 +42,31 @@ class RetailEditionSelector(object):
 
         self.preferred = []
         self.acceptable = []
-        preferred_langs = set()
 
-        # Prefer cookie if set
-        if 'asm.translation.lang' in request.cookies:
-            preferred_langs.add(request.cookies['asm.translation.lang'])
+        if not hasattr(request, 'asm_translation_preferred'):
+            preferred_langs = set()
+            # Prefer cookie if set
+            if 'asm.translation.lang' in request.cookies:
+                preferred_langs.add(request.cookies['asm.translation.lang'])
+            else:
+                # If no cookie is set we'll prefer the browser setting
+                for lang in request.headers.get('Accept-Language', '').split(','):
+                    lang = lang.split(';')[0]
+                    lang = lang.split('-')[0]
+                    preferred_langs.add(lang)
+            request.asm_translation_preferred = preferred_langs
         else:
-            # If no cookie is set we'll prefer the browser setting
-            for lang in request.headers.get('Accept-Language', '').split(','):
-                lang = lang.split(';')[0]
-                lang = lang.split('-')[0]
-                preferred_langs.add(lang)
+            preferred_langs = request.asm_translation_preferred
+
+        editions = list(page.editions)
 
         preferred_langs = set('lang:%s' % lang for lang in preferred_langs)
-        for edition in page.editions:
+        for edition in editions:
             if preferred_langs.intersection(edition.parameters):
                 self.preferred.append(edition)
 
         # Otherwise we also accept language neutral or english
-        for edition in page.editions:
+        for edition in editions:
             if 'lang:' in edition.parameters:
                 self.acceptable.append(edition)
             if 'lang:en' in edition.parameters:
