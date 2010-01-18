@@ -11,6 +11,13 @@ def select_initial_language():
     return set(['lang:en'])
 
 
+class Prefixes(object):
+
+    zope.interface.implements(asm.cms.interfaces.IExtensionPrefixes)
+
+    prefixes = set(['lang'])
+
+
 class CMSEditionSelector(object):
 
     zope.interface.implements(asm.cms.IEditionSelector)
@@ -98,4 +105,4 @@ class Translate(asm.cms.Form):
             self.flash(u'Translation created.')
         else:
             self.flash(u'Translation already exists.')
-        self.redirect(self.url(translation, '@@edit'))
+        self.redirect(self.url(translation))
