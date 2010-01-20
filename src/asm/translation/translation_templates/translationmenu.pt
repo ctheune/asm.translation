@@ -1,1 +1,10 @@
-<li><a tal:attributes="href python:view.url(context, 'translate')">Translate</a></li>
+<div class="section">
+    <h3>Translations</h3>
+
+    <ul>
+        <li><button class="button selected">English</button>
+            <span class="discreet">(is fallback)</span></li>
+        <li><button class="button">Finnish</button></li>
+    </ul>
+
+</div>

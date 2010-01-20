@@ -83,7 +83,7 @@ class ITranslation(zope.interface.Interface):
 
 class TranslationMenu(grok.Viewlet):
 
-    grok.viewletmanager(asm.cms.Actions)
+    grok.viewletmanager(asm.cms.PageActionGroups)
     grok.context(asm.cms.IEdition)
 
 
