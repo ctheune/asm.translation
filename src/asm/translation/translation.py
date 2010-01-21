@@ -7,6 +7,10 @@ import zope.interface
 import zope.schema
 
 
+LANGUAGE_LABELS = {'lang:en': 'English',
+                   'lang:fi': 'Finnish'}
+
+
 def select_initial_language():
     return set(['lang:en'])
 
@@ -85,6 +89,30 @@ class TranslationMenu(grok.Viewlet):
 
     grok.viewletmanager(asm.cms.PageActionGroups)
     grok.context(asm.cms.IEdition)
+
+    def current_language(self):
+        for candidate in self.context.parameters:
+            if candidate.startswith('lang:'):
+                return LANGUAGE_LABELS[candidate]
+
+    def list_language_versions(self):
+        parameters = self.context.parameters
+        for lang in ['lang:en', 'lang:fi']:
+            p = self.context.parameters.replace('lang:*', lang)
+            version = {}
+            version['class'] = ''
+            version['label'] = LANGUAGE_LABELS[lang]
+            version['hint'] = []
+            try:
+                version['edition'] = self.context.page.getEdition(p)
+            except KeyError:
+                version['hint'] = '(not created yet)'
+                version['edition'] = None
+            if version['edition'] is self.context:
+                version['class'] = 'selected'
+            if lang == 'lang:en':
+                version['hint'] = '(is fallback)'
+            yield version
 
 
 class Translate(asm.cms.Form):
