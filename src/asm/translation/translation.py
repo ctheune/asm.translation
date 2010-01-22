@@ -8,6 +8,7 @@ import zope.schema
 
 
 LANGUAGE_LABELS = {'lang:en': 'English',
+                   'lang:': 'independent',
                    'lang:fi': 'Finnish'}
 
 
