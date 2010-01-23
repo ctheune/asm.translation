@@ -12,6 +12,15 @@ LANGUAGE_LABELS = {'lang:en': 'English',
                    'lang:fi': 'Finnish'}
 
 
+class LanguageLabels(grok.GlobalUtility):
+
+    zope.interface.implements(asm.cms.interfaces.IEditionLabels)
+    grok.name('lang')
+
+    def lookup(self, tag):
+        return LANGUAGE_LABELS[tag]
+
+
 def select_initial_language():
     return set(['lang:en'])
 
