@@ -8,7 +8,7 @@
     <ul class="expand">
         <li tal:repeat="version viewlet/list_language_versions"
             tal:attributes="class version/class">
-            <a tal:attributes="href version/edition/@@absolute_url">
+            <a tal:attributes="href version/url">
                 <span tal:replace="version/label"/>
                 <span tal:condition="version/hint" class="discreet"
                       tal:content="version/hint"/>

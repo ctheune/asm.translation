@@ -109,38 +109,49 @@ class TranslationMenu(grok.Viewlet):
         parameters = self.context.parameters
         for lang in ['lang:en', 'lang:fi']:
             p = self.context.parameters.replace('lang:*', lang)
+            lang_code = lang.split(':')[1]
+            try:
+                edition = self.context.page.getEdition(p)
+            except KeyError:
+                edition = None
+
             version = {}
             version['class'] = ''
             version['label'] = LANGUAGE_LABELS[lang]
             version['hint'] = []
-            try:
-                version['edition'] = self.context.page.getEdition(p)
-            except KeyError:
+            if edition is not None:
+                version['url'] = self.view.url(edition, '@@edit')
+            else:
                 version['hint'] = '(not created yet)'
-                version['edition'] = None
-            if version['edition'] is self.context:
+                version['url'] = self.view.url(
+                    self.context, '@@translate',
+                    data=dict(language=lang_code))
+
+            if edition is self.context:
                 version['class'] = 'selected'
             if lang == 'lang:en':
                 version['hint'] = '(is fallback)'
+
             yield version
 
 
-class Translate(asm.cms.Form):
+class Translate(grok.View):
 
     grok.context(asm.cms.IEdition)
     form_fields = grok.AutoFields(ITranslation)
 
-    @grok.action(u'Translate')
-    def translate(self, language):
+    def update(self, language):
         page = self.context.page
-        translation = self.context.parameters.replace(
-            'lang:*', 'lang:%s' % language)
+        p = self.context.parameters.replace('lang:*', 'lang:%s' % language)
         try:
-            translation = page.getEdition(translation)
+            translation = page.getEdition(p)
         except KeyError:
-            translation = page.addEdition(translation)
+            translation = page.addEdition(p)
             translation.copyFrom(self.context)
             self.flash(u'Translation created.')
         else:
             self.flash(u'Translation already exists.')
-        self.redirect(self.url(translation))
+        self.translation = translation
+
+    def render(self):
+        self.redirect(self.url(self.translation, '@@edit'))
