@@ -7,8 +7,29 @@ import zope.interface
 import zope.schema
 
 
+LANGUAGE_LABELS = {'lang:en': 'English',
+                   'lang:': 'independent',
+                   'lang:fi': 'Finnish'}
+
+
+class LanguageLabels(grok.GlobalUtility):
+
+    zope.interface.implements(asm.cms.interfaces.IEditionLabels)
+    grok.name('lang')
+
+    def lookup(self, tag):
+        return LANGUAGE_LABELS[tag]
+
+
 def select_initial_language():
     return set(['lang:en'])
+
+
+class Prefixes(object):
+
+    zope.interface.implements(asm.cms.interfaces.IExtensionPrefixes)
+
+    prefixes = set(['lang'])
 
 
 class CMSEditionSelector(object):
@@ -76,26 +97,61 @@ class ITranslation(zope.interface.Interface):
 
 class TranslationMenu(grok.Viewlet):
 
-    grok.viewletmanager(asm.cms.Actions)
+    grok.viewletmanager(asm.cms.PageActionGroups)
     grok.context(asm.cms.IEdition)
 
+    def current_language(self):
+        for candidate in self.context.parameters:
+            if candidate.startswith('lang:'):
+                return LANGUAGE_LABELS[candidate]
 
-class Translate(asm.cms.Form):
+    def list_language_versions(self):
+        parameters = self.context.parameters
+        for lang in ['lang:en', 'lang:fi']:
+            p = self.context.parameters.replace('lang:*', lang)
+            lang_code = lang.split(':')[1]
+            try:
+                edition = self.context.page.getEdition(p)
+            except KeyError:
+                edition = None
+
+            version = {}
+            version['class'] = ''
+            version['label'] = LANGUAGE_LABELS[lang]
+            version['hint'] = []
+            if edition is not None:
+                version['url'] = self.view.url(edition, '@@edit')
+            else:
+                version['hint'] = '(not created yet)'
+                version['url'] = self.view.url(
+                    self.context, '@@translate',
+                    data=dict(language=lang_code))
+
+            if edition is self.context:
+                version['class'] = 'selected'
+            if lang == 'lang:en':
+                version['hint'] = '(is fallback)'
+
+            yield version
+
+
+class Translate(grok.View):
 
     grok.context(asm.cms.IEdition)
     form_fields = grok.AutoFields(ITranslation)
 
-    @grok.action(u'Translate')
-    def translate(self, language):
+    def update(self, language):
         page = self.context.page
-        translation = self.context.parameters.replace(
-            'lang:*', 'lang:%s' % language)
+        p = self.context.parameters.replace('lang:*', 'lang:%s' % language)
         try:
-            translation = page.getEdition(translation)
+            translation = page.getEdition(p)
         except KeyError:
-            translation = page.addEdition(translation)
+            translation = page.addEdition(p)
             translation.copyFrom(self.context)
             self.flash(u'Translation created.')
         else:
             self.flash(u'Translation already exists.')
-        self.redirect(self.url(translation, '@@edit'))
+        self.translation = translation
+
+    def render(self):
+        self.redirect(self.url(self.translation, '@@edit'))

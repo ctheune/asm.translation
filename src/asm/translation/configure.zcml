@@ -21,4 +21,10 @@
     name="translation"
     />
 
+  <utility
+    factory=".translation.Prefixes"
+    provides="asm.cms.interfaces.IExtensionPrefixes"
+    name="translation"
+    />
+
 </configure>
