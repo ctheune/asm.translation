@@ -27,4 +27,9 @@
     name="translation"
     />
 
+  <utility
+    component=".translation.default_languages"
+    provides="asm.translation.interfaces.ILanguageProfile"
+    />
+
 </configure>

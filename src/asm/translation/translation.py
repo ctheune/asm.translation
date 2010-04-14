@@ -5,11 +5,36 @@ import asm.cms
 import grok
 import zope.interface
 import zope.schema
+import zc.sourcefactory.basic
+
+LANGUAGE_LABELS = {'en': 'English',
+                   'de': 'German',
+                   '': 'independent',
+                   'fi': 'Finnish'}
+
+default_languages = ['en', 'fi']
 
 
-LANGUAGE_LABELS = {'lang:en': 'English',
-                   'lang:': 'independent',
-                   'lang:fi': 'Finnish'}
+def tag2lang(tag):
+    return tag.replace('lang:', '')
+
+
+def fallback():
+    return current()[0]
+
+
+def current():
+    return zope.component.getUtility(
+        asm.translation.interfaces.ILanguageProfile)
+
+
+class LanguageSource(zc.sourcefactory.basic.BasicSourceFactory):
+
+    def getValues(self):
+        return current()
+
+    def getTitle(self, value):
+        return LANGUAGE_LABELS.get(value, value)
 
 
 class LanguageLabels(grok.GlobalUtility):
@@ -18,11 +43,13 @@ class LanguageLabels(grok.GlobalUtility):
     grok.name('lang')
 
     def lookup(self, tag):
-        return LANGUAGE_LABELS[tag]
+        lang = tag2lang(tag)
+        return LANGUAGE_LABELS.get(lang, lang)
 
 
 def select_initial_language():
-    return set(['lang:en'])
+    return zope.component.getUtility(
+            asm.translation.interfaces.ILanguageProfile)[0]
 
 
 class Prefixes(object):
@@ -41,7 +68,7 @@ class CMSEditionSelector(object):
         self.preferred = []
         self.acceptable = []
         for edition in page.editions:
-            if 'lang:en' in edition.parameters:
+            if 'lang:%s' % fallback() in edition.parameters:
                 self.preferred.append(edition)
             else:
                 self.acceptable.append(edition)
@@ -84,15 +111,15 @@ class RetailEditionSelector(object):
         for edition in page.editions:
             if 'lang:' in edition.parameters:
                 self.acceptable.append(edition)
-            if 'lang:en' in edition.parameters:
+            if 'lang:%s' % fallback() in edition.parameters:
                 self.acceptable.append(edition)
 
 
 class ITranslation(zope.interface.Interface):
 
-    # Issue #61: Turn static list of values into source.
-    language = zope.schema.Choice(title=u'Language to translate to',
-                                  values=['fi', 'en'])
+    language = zope.schema.Choice(
+        title=u'Language to translate to',
+        source=LanguageSource())
 
 
 class TranslationMenu(grok.Viewlet):
@@ -103,13 +130,12 @@ class TranslationMenu(grok.Viewlet):
     def current_language(self):
         for candidate in self.context.parameters:
             if candidate.startswith('lang:'):
-                return LANGUAGE_LABELS[candidate]
+                return LANGUAGE_LABELS.get(tag2lang(candidate), candidate)
 
     def list_language_versions(self):
         parameters = self.context.parameters
-        for lang in ['lang:en', 'lang:fi']:
-            p = self.context.parameters.replace('lang:*', lang)
-            lang_code = lang.split(':')[1]
+        for lang in current():
+            p = self.context.parameters.replace('lang:*', 'lang:%s' % lang)
             try:
                 edition = self.context.page.getEdition(p)
             except KeyError:
@@ -117,7 +143,7 @@ class TranslationMenu(grok.Viewlet):
 
             version = {}
             version['class'] = ''
-            version['label'] = LANGUAGE_LABELS[lang]
+            version['label'] = LANGUAGE_LABELS.get(lang, lang)
             version['hint'] = []
             if edition is not None:
                 version['url'] = self.view.url(edition, '@@edit')
@@ -125,11 +151,11 @@ class TranslationMenu(grok.Viewlet):
                 version['hint'] = '(not created yet)'
                 version['url'] = self.view.url(
                     self.context, '@@translate',
-                    data=dict(language=lang_code))
+                    data=dict(language=lang))
 
             if edition is self.context:
                 version['class'] = 'selected'
-            if lang == 'lang:en':
+            if lang == fallback():
                 version['hint'] = '(is fallback)'
 
             yield version
