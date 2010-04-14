@@ -1,5 +1,5 @@
 
-0.1.3 (unreleased)
+0.1.3 (2010-04-14)
 ------------------
 
 - Make language selection configurable using a utility.
