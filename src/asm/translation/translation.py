@@ -19,6 +19,10 @@ def tag2lang(tag):
     return tag.replace('lang:', '')
 
 
+def lang2tag(lang):
+    return 'lang:%s' % lang
+
+
 def fallback():
     return current()[0]
 
@@ -48,8 +52,7 @@ class LanguageLabels(grok.GlobalUtility):
 
 
 def select_initial_language():
-    return zope.component.getUtility(
-            asm.translation.interfaces.ILanguageProfile)[0]
+    return set([lang2tag(fallback())])
 
 
 class Prefixes(object):
@@ -68,7 +71,7 @@ class CMSEditionSelector(object):
         self.preferred = []
         self.acceptable = []
         for edition in page.editions:
-            if 'lang:%s' % fallback() in edition.parameters:
+            if lang2tag(fallback()) in edition.parameters:
                 self.preferred.append(edition)
             else:
                 self.acceptable.append(edition)
@@ -102,16 +105,16 @@ class RetailEditionSelector(object):
                 lang = lang.split('-')[0]
                 preferred_langs.add(lang)
 
-        preferred_langs = set('lang:%s' % lang for lang in preferred_langs)
+        preferred_langs = set(lang2tag(lang) for lang in preferred_langs)
         for edition in page.editions:
             if preferred_langs.intersection(edition.parameters):
                 self.preferred.append(edition)
 
         # Otherwise we also accept language neutral or english
         for edition in page.editions:
-            if 'lang:' in edition.parameters:
+            if lang2tag('') in edition.parameters:
                 self.acceptable.append(edition)
-            if 'lang:%s' % fallback() in edition.parameters:
+            if lang2tag(fallback()) in edition.parameters:
                 self.acceptable.append(edition)
 
 
@@ -129,13 +132,14 @@ class TranslationMenu(grok.Viewlet):
 
     def current_language(self):
         for candidate in self.context.parameters:
-            if candidate.startswith('lang:'):
+            if candidate.startswith(lang2tag('')):
                 return LANGUAGE_LABELS.get(tag2lang(candidate), candidate)
 
     def list_language_versions(self):
         parameters = self.context.parameters
         for lang in current():
-            p = self.context.parameters.replace('lang:*', 'lang:%s' % lang)
+            p = self.context.parameters.replace(
+                lang2tag('*'), lang2tag(lang))
             try:
                 edition = self.context.page.getEdition(p)
             except KeyError:
@@ -168,7 +172,7 @@ class Translate(grok.View):
 
     def update(self, language):
         page = self.context.page
-        p = self.context.parameters.replace('lang:*', 'lang:%s' % language)
+        p = self.context.parameters.replace(lang2tag('*'), lang2tag(language))
         try:
             translation = page.getEdition(p)
         except KeyError:

@@ -2,7 +2,10 @@
 0.1.4 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix broken initial language selection. Re #7115.
+
+- Refactor conversion of tags into language and languages into tags, make use
+  of the pattern conform to DRY principle.
 
 
 0.1.3 (2010-04-14)
