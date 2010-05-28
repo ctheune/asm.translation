@@ -1,2 +1,2 @@
-recursive-include src *.txt *.zcml *.png *.js *.jpg *.pt *.css *.html *.ico *.gif
+recursive-include src *.txt *.zcml *.pt
 

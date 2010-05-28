@@ -10,6 +10,7 @@
             tal:attributes="class version/class">
             <a tal:attributes="href version/url">
                 <span tal:replace="version/label"/>
+                <span tal:replace="version/changed"/> ago
                 <span tal:condition="version/hint" class="discreet"
                       tal:content="version/hint"/>
             </a>

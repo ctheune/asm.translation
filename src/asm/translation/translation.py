@@ -6,6 +6,7 @@ import grok
 import zope.interface
 import zope.schema
 import zc.sourcefactory.basic
+import datetime
 
 LANGUAGE_LABELS = {'en': 'English',
                    'de': 'German',
@@ -149,6 +150,8 @@ class TranslationMenu(grok.Viewlet):
             version['class'] = ''
             version['label'] = LANGUAGE_LABELS.get(lang, lang)
             version['hint'] = []
+            version['changed'] = datetime.datetime.now(edition.modified.tzinfo) - edition.modified
+
             if edition is not None:
                 version['url'] = self.view.url(edition, '@@edit')
             else:
