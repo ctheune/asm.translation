@@ -3,7 +3,6 @@ dist
 etc
 var
 downloads
-buildout.cfg
 ~
 ID
 etc/
