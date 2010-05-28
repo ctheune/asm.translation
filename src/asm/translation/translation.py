@@ -84,39 +84,51 @@ class RetailEditionSelector(object):
     zope.component.adapts(asm.cms.IPage, asm.cms.IRetailSkin)
 
     def __init__(self, page, request):
-        # XXX This algorithm isn't optimal in all cases. E.g. if a user has a
-        # preferred language selected but it isn't available then we go
-        # directly to neutral/english instead of first checking for the
-        # browser setting.
 
         # XXX Need to make this more pluggable
         request.response.setHeader('Vary', 'Cookie,Accept-Language')
 
-        self.preferred = []
-        self.acceptable = []
-        preferred_langs = set()
+        preferred_langs = {}
 
         # Prefer cookie if set
         if 'asm.translation.lang' in request.cookies:
-            preferred_langs.add(request.cookies['asm.translation.lang'])
+            preferred_langs[request.cookies['asm.translation.lang']] = 1.0
         else:
             # If no cookie is set we'll prefer the browser setting
             for lang in request.headers.get('Accept-Language', '').split(','):
-                lang = lang.split(';')[0]
+                lang_priority = lang.split(';')
+                lang = lang_priority[0]
                 lang = lang.split('-')[0]
-                preferred_langs.add(lang)
 
-        preferred_langs = set(lang2tag(lang) for lang in preferred_langs)
-        for edition in page.editions:
-            if preferred_langs.intersection(edition.parameters):
-                self.preferred.append(edition)
+                priority = 1.0
+                if len(lang_priority) > 1:
+                    priority_str = lang_priority[1][2:]
+                    priority = float(priority_str)
 
-        # Otherwise we also accept language neutral or english
-        for edition in page.editions:
-            if lang2tag('') in edition.parameters:
-                self.acceptable.append(edition)
-            if lang2tag(fallback()) in edition.parameters:
-                self.acceptable.append(edition)
+                if preferred_langs.get(lang, 0) < priority:
+                    preferred_langs[lang] = priority
+
+        prioritized_langs = sorted(
+            preferred_langs.items(),
+            key=lambda x : x[1],
+            reverse=True)
+        preferred_langs = [lang2tag(lang[0]) for lang in prioritized_langs]
+
+        preferred = preferred_langs[:1]
+        acceptable = preferred_langs[1:]
+        acceptable.append(lang2tag(''))
+        acceptable.append(lang2tag(fallback()))
+
+        def get_editions(tags):
+            result = []
+            for tag in tags:
+                for edition in page.editions:
+                    if tag in edition.parameters:
+                        result.append(edition)
+            return result
+
+        self.preferred = get_editions(preferred)
+        self.acceptable = get_editions(acceptable)
 
 
 class ITranslation(zope.interface.Interface):
