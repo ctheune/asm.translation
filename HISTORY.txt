@@ -2,7 +2,8 @@
 0.1.5 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Select preferred and acceptable languages more consistently and
+  approximate RFC2616 Accept-Language header handling.
 
 
 0.1.4 (2010-04-19)
