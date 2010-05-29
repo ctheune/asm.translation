@@ -185,3 +185,12 @@ class TranslationTests(unittest.TestCase):
         selector = self._get_selector()
         self.assertEquals([edition_en], selector.preferred)
         self.assertEquals([edition_fi], selector.acceptable)
+
+    def test_select_en_with_multiple_en_editions(self):
+        self.request._environ['ACCEPT_LANGUAGE'] = 'en'
+        edition_en_draft = self.page.addEdition(['lang:en', 'draft'])
+        edition_en_published = self.page.addEdition(['lang:en', 'published'])
+        selector = self._get_selector()
+        self.assertEquals(
+            [edition_en_draft, edition_en_published], selector.preferred)
+        self.assertEquals([], selector.acceptable)

@@ -120,24 +120,34 @@ class RetailEditionSelector(object):
         if fallback() not in preferred_langs:
             acceptable_langs.append(fallback())
 
-        def get_editions(tags):
+        # Select the preferred language by finding the one with the
+        # highest priority that has at least one edition.
+        preferred_language = None
+        for language in preferred_langs:
+            language_tag = lang2tag(language)
+            for edition in page.editions:
+                if language_tag in edition.parameters:
+                    preferred_language = language
+                    break
+            if preferred_language is not None:
+                break
+
+        if preferred_language is not None:
+            preferred_langs.remove(preferred_language)
+            acceptable_langs = preferred_langs + acceptable_langs
+            preferred_langs = [preferred_language]
+
+        def get_editions(languages):
             result = []
-            for tag in tags:
-                tag = lang2tag(tag)
+            for language in languages:
+                tag = lang2tag(language)
                 for edition in page.editions:
                     if tag in edition.parameters:
                         result.append(edition)
             return result
 
-        # Always prefer at most 1 language. However we have to make
-        # sure that we have a matching edition before deciding which
-        # one is the preferred. get_editions() will drop any language
-        # for which no edition exists. The remaining editions that
-        # could have been preferred are acceptable instead.
         self.preferred = get_editions(preferred_langs)
         self.acceptable = get_editions(acceptable_langs)
-        self.acceptable[:0] = self.preferred[1:]
-        del self.preferred[1:]
 
 
 class ITranslation(zope.interface.Interface):
