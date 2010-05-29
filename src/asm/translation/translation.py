@@ -2,11 +2,14 @@
 # See also LICENSE.txt
 
 import asm.cms
+import asm.cms.interfaces
+import asm.translation.interfaces
+import datetime
 import grok
+import zc.sourcefactory.basic
+import zope.component
 import zope.interface
 import zope.schema
-import zc.sourcefactory.basic
-import datetime
 
 LANGUAGE_LABELS = {'en': 'English',
                    'de': 'German',
@@ -84,7 +87,6 @@ class RetailEditionSelector(object):
     zope.component.adapts(asm.cms.IPage, asm.cms.IRetailSkin)
 
     def __init__(self, page, request):
-
         # XXX Need to make this more pluggable
         request.response.setHeader('Vary', 'Cookie,Accept-Language')
 
@@ -112,23 +114,30 @@ class RetailEditionSelector(object):
             preferred_langs.items(),
             key=lambda x : x[1],
             reverse=True)
-        preferred_langs = [lang2tag(lang[0]) for lang in prioritized_langs]
+        preferred_langs = [lang[0] for lang in prioritized_langs]
 
-        preferred = preferred_langs[:1]
-        acceptable = preferred_langs[1:]
-        acceptable.append(lang2tag(''))
-        acceptable.append(lang2tag(fallback()))
+        acceptable_langs = []
+        if fallback() not in preferred_langs:
+            acceptable_langs.append(fallback())
 
         def get_editions(tags):
             result = []
             for tag in tags:
+                tag = lang2tag(tag)
                 for edition in page.editions:
                     if tag in edition.parameters:
                         result.append(edition)
             return result
 
-        self.preferred = get_editions(preferred)
-        self.acceptable = get_editions(acceptable)
+        # Always prefer at most 1 language. However we have to make
+        # sure that we have a matching edition before deciding which
+        # one is the preferred. get_editions() will drop any language
+        # for which no edition exists. The remaining editions that
+        # could have been preferred are acceptable instead.
+        self.preferred = get_editions(preferred_langs)
+        self.acceptable = get_editions(acceptable_langs)
+        self.acceptable[:0] = self.preferred[1:]
+        del self.preferred[1:]
 
 
 class ITranslation(zope.interface.Interface):
