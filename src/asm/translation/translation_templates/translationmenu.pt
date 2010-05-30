@@ -1,11 +1,7 @@
-<div class="section expandable">
-    <h3>Language
-    <span class="closed ui-icon ui-icon-carat-1-s"></span>
-    <span class="closed hint" tal:content="viewlet/current_language">English</span>
-    <span class="open ui-icon ui-icon-carat-1-n"></span>
-    </h3>
+<div class="section">
+    <h3>Language</h3>
 
-    <ul class="expand">
+    <ul>
         <li tal:repeat="version viewlet/list_language_versions"
             tal:attributes="class version/class">
             <a tal:attributes="href version/url">
@@ -15,4 +11,5 @@
             </a>
         </li>
     </ul>
+
 </div>
