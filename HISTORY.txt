@@ -1,5 +1,5 @@
 
-0.1.7 (unreleased)
+0.1.7 (2010-05-31)
 ------------------
 
 - Adapt to new expandable section layout.
