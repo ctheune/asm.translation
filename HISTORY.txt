@@ -2,7 +2,9 @@
 0.1.7 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Adapt to new expandable section layout.
+
+- Remove experimental code that slipped in and was broken.
 
 
 0.1.6 (2010-05-29)
