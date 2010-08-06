@@ -213,7 +213,8 @@ class Translate(grok.View):
 
     def update(self, language):
         page = self.context.page
-        p = self.context.parameters.replace(lang2tag('*'), lang2tag(language))
+        parameters = asm.cms.edition.get_initial_parameters()
+        p = parameters.replace(lang2tag('*'), lang2tag(language))
         try:
             translation = page.getEdition(p)
         except KeyError:
