@@ -1,0 +1,11 @@
+CHANGES
+=======
+
+
+0.1.8 (unreleased)
+------------------
+
+- Fixed issue with language selector: if a translation exists but doesn't have
+  identical parameters then the translation would be reported missing and a
+  new translation would be created instead of relying on the existing one.
+  This led to confusion when used together with the draft/public workflow.

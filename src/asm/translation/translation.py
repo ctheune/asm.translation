@@ -172,10 +172,18 @@ class TranslationMenu(grok.Viewlet):
         for lang in current():
             p = self.context.parameters.replace(
                 lang2tag('*'), lang2tag(lang))
+            edition = None
             try:
+                # Try to find an edition in this language with exactly
+                # identical other parameters
                 edition = self.context.page.getEdition(p)
             except KeyError:
-                edition = None
+                # Try to find an edition in this language without caring for
+                # the other parameters.
+                for candidate in self.context.page.editions:
+                    if lang2tag(lang) in candidate.parameters:
+                        edition = candidate
+                        break
 
             version = {}
             version['class'] = ''

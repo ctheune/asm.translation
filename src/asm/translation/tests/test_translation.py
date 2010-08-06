@@ -15,6 +15,7 @@ import zope.component
 import zope.publisher.browser
 import zope.app.testing.placelesssetup
 
+
 class TranslationTests(unittest.TestCase):
 
     def setUp(self):
