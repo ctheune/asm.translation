@@ -2,7 +2,7 @@ CHANGES
 =======
 
 
-0.1.8 (unreleased)
+0.1.8 (2010-08-06)
 ------------------
 
 - Fixed issue with language selector: if a translation exists but doesn't have
