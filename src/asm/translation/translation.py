@@ -3,6 +3,8 @@
 
 import asm.cms
 import asm.cms.interfaces
+import asm.cmsui.base
+import asm.cmsui.interfaces
 import asm.translation.interfaces
 import datetime
 import grok
@@ -69,7 +71,7 @@ class Prefixes(object):
 class CMSEditionSelector(object):
 
     zope.interface.implements(asm.cms.IEditionSelector)
-    zope.component.adapts(asm.cms.IPage, asm.cms.ICMSSkin)
+    zope.component.adapts(asm.cms.IPage, asm.cmsui.interfaces.ICMSSkin)
 
     def __init__(self, page, request):
         self.preferred = []
@@ -84,7 +86,7 @@ class CMSEditionSelector(object):
 class RetailEditionSelector(object):
 
     zope.interface.implements(asm.cms.IEditionSelector)
-    zope.component.adapts(asm.cms.IPage, asm.cms.IRetailSkin)
+    zope.component.adapts(asm.cms.IPage, asm.cmsui.interfaces.IRetailSkin)
 
     def __init__(self, page, request):
         # XXX Need to make this more pluggable
@@ -159,7 +161,7 @@ class ITranslation(zope.interface.Interface):
 
 class TranslationMenu(grok.Viewlet):
 
-    grok.viewletmanager(asm.cms.PageActionGroups)
+    grok.viewletmanager(asm.cmsui.base.PageActionGroups)
     grok.context(asm.cms.IEdition)
 
     def current_language(self):
