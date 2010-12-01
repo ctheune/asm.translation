@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 
 setup(name='asm.translation',
-      version='0.1.11dev',
+      version='0.1.11',
       description="Multi-lingual content for Assembly CMS",
       author="Webcrew",
       author_email="web@assembly.org",
