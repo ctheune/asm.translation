@@ -5,7 +5,8 @@ CHANGES
 0.1.11 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Provide a fix for the public language selector to always allow the
+  language-independent code to be acceptable.
 
 
 0.1.10 (2010-08-21)

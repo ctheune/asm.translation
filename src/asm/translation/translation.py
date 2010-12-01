@@ -121,6 +121,10 @@ class RetailEditionSelector(object):
         acceptable_langs = []
         if fallback() not in preferred_langs:
             acceptable_langs.append(fallback())
+        # XXX Here's a special case: some old databases were created with an
+        # empty string as the marker for 'language independent'. This feature
+        # isn't used much but some editions still have it.
+        acceptable_langs.append('')
 
         # Select the preferred language by finding the one with the
         # highest priority that has at least one edition.
