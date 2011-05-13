@@ -2,7 +2,12 @@ CHANGES
 =======
 
 
-0.1.11 (unreleased)
+0.1.12 (unreleased)
+-------------------
+
+- Adapt to new selector API.
+
+0.1.11 (2010-12-01)
 -------------------
 
 - Provide a fix for the public language selector to always allow the
