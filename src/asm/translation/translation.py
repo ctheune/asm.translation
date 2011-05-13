@@ -71,25 +71,30 @@ class Prefixes(object):
 class CMSEditionSelector(object):
 
     zope.interface.implements(asm.cms.IEditionSelector)
-    zope.component.adapts(asm.cms.IPage, asm.cmsui.interfaces.ICMSSkin)
+    zope.component.adapts(asm.cmsui.interfaces.ICMSSkin)
 
-    def __init__(self, page, request):
-        self.preferred = []
-        self.acceptable = []
+    def __init__(self, request):
+        self.request = request
+
+    def select(self, page):
+        preferred = []
+        acceptable = []
         for edition in page.editions:
             if lang2tag(fallback()) in edition.parameters:
-                self.preferred.append(edition)
+                preferred.append(edition)
             else:
-                self.acceptable.append(edition)
+                acceptable.append(edition)
+        return preferred, acceptable
 
 
 class RetailEditionSelector(object):
 
     zope.interface.implements(asm.cms.IEditionSelector)
-    zope.component.adapts(asm.cms.IPage, asm.cmsui.interfaces.IRetailSkin)
+    zope.component.adapts(asm.cmsui.interfaces.IRetailSkin)
 
-    def __init__(self, page, request):
+    def __init__(self, request):
         # XXX Need to make this more pluggable
+        self.request = request
         request.response.setHeader('Vary', 'Cookie,Accept-Language')
 
         preferred_langs = {}
@@ -126,12 +131,19 @@ class RetailEditionSelector(object):
         # isn't used much but some editions still have it.
         acceptable_langs.append('')
 
+        self.preferred_langs = preferred_langs
+        self.acceptable_langs = acceptable_langs
+
+    def select(self, page):
         # Select the preferred language by finding the one with the
         # highest priority that has at least one edition.
+        preferred_langs = list(self.preferred_langs)
+        acceptable_langs = list(self.acceptable_langs)
+        page_editions = list(page.editions)
         preferred_language = None
         for language in preferred_langs:
             language_tag = lang2tag(language)
-            for edition in page.editions:
+            for edition in page_editions:
                 if language_tag in edition.parameters:
                     preferred_language = language
                     break
@@ -147,13 +159,14 @@ class RetailEditionSelector(object):
             result = []
             for language in languages:
                 tag = lang2tag(language)
-                for edition in page.editions:
+                for edition in page_editions:
                     if tag in edition.parameters:
                         result.append(edition)
             return result
 
-        self.preferred = get_editions(preferred_langs)
-        self.acceptable = get_editions(acceptable_langs)
+        preferred = get_editions(preferred_langs)
+        acceptable = get_editions(acceptable_langs)
+        return preferred, acceptable
 
 
 class ITranslation(zope.interface.Interface):
