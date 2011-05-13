@@ -2,7 +2,7 @@ CHANGES
 =======
 
 
-0.1.12 (unreleased)
+0.1.12 (2011-05-13)
 -------------------
 
 - Adapt to new selector API.
