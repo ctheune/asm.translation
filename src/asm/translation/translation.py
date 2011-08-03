@@ -1,4 +1,4 @@
-# Copyright (c) 2009 Assembly Organizing
+# Copyright (c) 2009-2011 Assembly Organizing
 # See also LICENSE.txt
 
 import asm.cms
@@ -6,11 +6,12 @@ import asm.cms.interfaces
 import asm.cmsui.base
 import asm.cmsui.interfaces
 import asm.translation.interfaces
-import datetime
 import grok
 import zc.sourcefactory.basic
 import zope.component
+import zope.i18n.interfaces
 import zope.interface
+import zope.publisher.interfaces.browser
 import zope.schema
 
 LANGUAGE_LABELS = {'en': 'English',
@@ -87,6 +88,34 @@ class CMSEditionSelector(object):
         return preferred, acceptable
 
 
+def get_language_preferences(request):
+    preferred_langs = {}
+
+    # Prefer cookie if set
+    if 'asm.translation.lang' in request.cookies:
+        preferred_langs[request.cookies['asm.translation.lang']] = 1.0
+    else:
+        # If no cookie is set we'll prefer the browser setting
+        for lang in request.headers.get('Accept-Language', '').split(','):
+            lang_priority = lang.split(';')
+            lang = lang_priority[0]
+            lang = lang.split('-')[0]
+
+            priority = 1.0
+            if len(lang_priority) > 1:
+                priority_str = lang_priority[1][2:]
+                priority = float(priority_str)
+
+            if preferred_langs.get(lang, 0) < priority:
+                preferred_langs[lang] = priority
+
+    prioritized_langs = sorted(
+        preferred_langs.items(),
+        key=lambda x : x[1],
+        reverse=True)
+    return [lang[0] for lang in prioritized_langs]
+
+
 class RetailEditionSelector(object):
 
     zope.interface.implements(asm.cms.IEditionSelector)
@@ -97,32 +126,7 @@ class RetailEditionSelector(object):
         self.request = request
         request.response.setHeader('Vary', 'Cookie,Accept-Language')
 
-        preferred_langs = {}
-
-        # Prefer cookie if set
-        if 'asm.translation.lang' in request.cookies:
-            preferred_langs[request.cookies['asm.translation.lang']] = 1.0
-        else:
-            # If no cookie is set we'll prefer the browser setting
-            for lang in request.headers.get('Accept-Language', '').split(','):
-                lang_priority = lang.split(';')
-                lang = lang_priority[0]
-                lang = lang.split('-')[0]
-
-                priority = 1.0
-                if len(lang_priority) > 1:
-                    priority_str = lang_priority[1][2:]
-                    priority = float(priority_str)
-
-                if preferred_langs.get(lang, 0) < priority:
-                    preferred_langs[lang] = priority
-
-        prioritized_langs = sorted(
-            preferred_langs.items(),
-            key=lambda x : x[1],
-            reverse=True)
-        preferred_langs = [lang[0] for lang in prioritized_langs]
-
+        preferred_langs = get_language_preferences(self.request)
         acceptable_langs = []
         if fallback() not in preferred_langs:
             acceptable_langs.append(fallback())
@@ -167,6 +171,18 @@ class RetailEditionSelector(object):
         preferred = get_editions(preferred_langs)
         acceptable = get_editions(acceptable_langs)
         return preferred, acceptable
+
+
+class RetailPreferredLanguages(grok.Adapter):
+
+    grok.context(zope.publisher.interfaces.browser.IBrowserRequest)
+    grok.provides(zope.i18n.interfaces.IUserPreferredLanguages)
+
+    def __init__(self, request):
+        self.request = request
+
+    def getPreferredLanguages(self):
+        return get_language_preferences(self.request)
 
 
 class ITranslation(zope.interface.Interface):

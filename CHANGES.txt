@@ -5,7 +5,7 @@ CHANGES
 0.1.13 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Integrate IPreferredLanguages with our content language negotiation.
 
 
 0.1.12 (2011-05-13)
