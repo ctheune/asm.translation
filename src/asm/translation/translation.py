@@ -58,7 +58,7 @@ class LanguageLabels(grok.GlobalUtility):
         return LANGUAGE_LABELS.get(lang, lang)
 
 
-def select_initial_language():
+def select_initial_language(page):
     return set([lang2tag(fallback())])
 
 
